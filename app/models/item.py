@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func, ForeignKey, Boolean, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from __future__ import annotations
 from typing import TYPE_CHECKING
 from app.db.session import Base
 

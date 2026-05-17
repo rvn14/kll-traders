@@ -78,3 +78,5 @@ class CustomerProfile(Base):
 
     cart: Mapped["Cart"] = relationship(back_populates="customer", uselist=False, cascade="all, delete-orphan")
 
+    orders: Mapped[list["Order"]] = relationship(back_populates="customer", cascade="all, delete-orphan")
+
