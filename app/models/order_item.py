@@ -6,6 +6,8 @@ from sqlalchemy import UniqueConstraint, ForeignKey, Numeric, String, DateTime, 
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.session import Base
+from app.models.item import Item
+from app.models.order import Order
 
 class OrderItem(Base):
     __tablename__ = "order_items"

@@ -6,6 +6,10 @@ from sqlalchemy import ForeignKey, Numeric, String, DateTime, func, Enum, Text, 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from app.db.session import Base
+from app.models.address import Address
+from app.models.item import Item
+from app.models.order_item import OrderItem
+from app.models.user import User
 
 
 def _create_order_item(item):
