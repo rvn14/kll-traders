@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func, ForeignKey, Boolean, Integer
@@ -29,6 +30,16 @@ class Item(Base):
     description: Mapped[str] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    brand_id: Mapped[int] = mapped_column(
+        ForeignKey("brands.id"),
+        nullable=False
+    )
+
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id"),
+        nullable=False
     )
 
     brand_id: Mapped[int] = mapped_column(
