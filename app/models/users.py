@@ -6,10 +6,10 @@ from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func
 
 from datetime import datetime
 
-class Customer(Base):
-    __tablename__ = "customers"
+class User(Base):
+    __tablename__ = "users"
     __table_args__ = (
-        UniqueConstraint("email", name="uq_customer_email"),
+        UniqueConstraint("email", name="uq_user_email"),
     )
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
