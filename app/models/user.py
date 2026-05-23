@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.models.address import Address
 from app.models.cart import Cart
+from app.models.order import Order
 
 
 class UserRole(str,enum.Enum):
