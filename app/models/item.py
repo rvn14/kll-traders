@@ -44,6 +44,12 @@ class Item(Base):
         nullable=False
     )
     
+    warranty_weeks: Mapped[int] = mapped_column(
+        Integer,
+        nullable=True,
+        default=0
+    )
+
     price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,
