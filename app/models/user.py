@@ -1,14 +1,17 @@
+from typing import TYPE_CHECKING
+
 import enum
 from sqlalchemy import UniqueConstraint
 from app.db.session import Base
 from sqlalchemy.orm import Mapped, mapped_column , relationship
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, Text, UniqueConstraint, func
 
 from datetime import datetime
 
-from app.models.address import Address
-from app.models.cart import Cart
-from app.models.order import Order
+if TYPE_CHECKING:
+    from app.models.address import Address
+    from app.models.cart import Cart
+    from app.models.order import Order
 
 
 class UserRole(str,enum.Enum):
@@ -33,7 +36,11 @@ class User(Base):
     
     phone_number: Mapped[str] = mapped_column( String(20), nullable=True,)
     
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole),default=UserRole.CUSTOMER)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, native_enum=False),
+        default=UserRole.CUSTOMER,
+        nullable=False
+    )
     
     is_active: Mapped[bool] = mapped_column(
         nullable=False,
