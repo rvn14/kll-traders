@@ -18,6 +18,9 @@ class UserRole(str,enum.Enum):
     ADMIN    = "admin"
     CUSTOMER = "customer"
 
+class AuthProvider(str, enum.Enum):
+    LOCAL = "local"
+    GOOGLE = "google"
 
 
 class User(Base):
@@ -30,9 +33,18 @@ class User(Base):
     
     full_name: Mapped[str] = mapped_column(String(255),nullable=False)
 
-    hashed_password: Mapped[str] = mapped_column(String(255))
+    hashed_password: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
     
     email: Mapped[str] = mapped_column( String(100),nullable=False,index=True )
+
+    auth_provider: Mapped[AuthProvider] = mapped_column(
+        Enum(AuthProvider, native_enum=False),
+        default=AuthProvider.LOCAL,
+        nullable=False
+    )
     
     phone_number: Mapped[str] = mapped_column( String(20), nullable=True,)
     
