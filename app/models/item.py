@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func, ForeignKey, Boolean, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from __future__ import annotations
 from typing import TYPE_CHECKING
 from app.db.session import Base
 
@@ -30,16 +31,6 @@ class Item(Base):
     description: Mapped[str] = mapped_column(
         Text,
         nullable=True,
-    )
-
-    brand_id: Mapped[int] = mapped_column(
-        ForeignKey("brands.id"),
-        nullable=False
-    )
-
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("categories.id"),
-        nullable=False
     )
 
     brand_id: Mapped[int] = mapped_column(
@@ -110,4 +101,3 @@ class Item(Base):
     )
 
     cart_items:Mapped[list["CartItem"]] = relationship(back_populates="item")
-
