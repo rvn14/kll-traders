@@ -7,6 +7,7 @@ from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func, 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from app.db.session import Base
+from app.models.order_item import OrderItem
 
 if TYPE_CHECKING:
     from app.models.blobs import Blob
@@ -42,17 +43,13 @@ class Item(Base):
         ForeignKey("categories.id"),
         nullable=False
     )
-
-    brand_id: Mapped[int] = mapped_column(
-        ForeignKey("brands.id"),
-        nullable=False
-    )
-
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("categories.id"),
-        nullable=False
-    )
     
+    warranty_weeks: Mapped[int] = mapped_column(
+        Integer,
+        nullable=True,
+        default=0
+    )
+
     price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,
@@ -111,4 +108,8 @@ class Item(Base):
     )
 
     cart_items:Mapped[list["CartItem"]] = relationship(back_populates="item")
+
+    order_items: Mapped[list["OrderItem"]] = relationship(
+        back_populates="item"
+    )
 

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import func
 from sqlalchemy import ForeignKey, String, DateTime
@@ -6,7 +10,11 @@ from sqlalchemy.orm import Mapped
 from app.db.session import Base
 from datetime import datetime
 
-from app.models.user import CustomerProfile, User
+from app.models.user import CustomerProfile
+from app.models.order_address import order_addresses
+
+if TYPE_CHECKING:
+    from app.models.order import Order
 
 
 class Address(Base):
@@ -48,3 +56,13 @@ class Address(Base):
     )
 
     customer_profile: Mapped["CustomerProfile"] = relationship(back_populates="addresses")
+
+    delivery_orders: Mapped[list["Order"]] = relationship(
+        back_populates="delivery_address",
+        foreign_keys="Order.delivery_address_id",
+    )
+
+    orders: Mapped[list["Order"]] = relationship(
+        secondary=order_addresses,
+        back_populates="addresses",
+    )

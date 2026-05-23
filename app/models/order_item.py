@@ -40,11 +40,6 @@ class OrderItem(Base):
         nullable=False
     )
 
-    warranty_weeks: Mapped[int] = mapped_column(
-        Integer,
-        nullable=True
-    )
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

@@ -62,5 +62,4 @@ class CustomerRepository:
         except:
           self.db.rollback()
           raise
-      
-    
+        
