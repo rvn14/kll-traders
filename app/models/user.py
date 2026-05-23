@@ -1,5 +1,5 @@
+import enum
 from sqlalchemy import UniqueConstraint
-from sqlalchemy import Enum
 from app.db.session import Base
 from sqlalchemy.orm import Mapped, mapped_column , relationship
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, UniqueConstraint, func
@@ -10,7 +10,7 @@ from app.models.address import Address
 from app.models.cart import Cart
 
 
-class UserRole(str,Enum):
+class UserRole(str,enum.Enum):
     ADMIN    = "admin"
     CUSTOMER = "customer"
 
