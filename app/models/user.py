@@ -1,19 +1,26 @@
-from sqlalchemy import UniqueConstraint
+from typing import TYPE_CHECKING
+
 import enum
+from sqlalchemy import UniqueConstraint
 from app.db.session import Base
 from sqlalchemy.orm import Mapped, mapped_column , relationship
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, Text, UniqueConstraint, func
 
 from datetime import datetime
 
-from app.models.address import Address
-from app.models.cart import Cart
+if TYPE_CHECKING:
+    from app.models.address import Address
+    from app.models.cart import Cart
+    from app.models.order import Order
 
 
-class UserRole(str, enum.Enum):
-    ADMIN = "admin"
+class UserRole(str,enum.Enum):
+    ADMIN    = "admin"
     CUSTOMER = "customer"
 
+class AuthProvider(str, enum.Enum):
+    LOCAL = "local"
+    GOOGLE = "google"
 
 
 class User(Base):
@@ -26,13 +33,26 @@ class User(Base):
     
     full_name: Mapped[str] = mapped_column(String(255),nullable=False)
 
-    hashed_password: Mapped[str] = mapped_column(String(255))
+    hashed_password: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
     
     email: Mapped[str] = mapped_column( String(100),nullable=False,index=True )
+
+    auth_provider: Mapped[AuthProvider] = mapped_column(
+        Enum(AuthProvider, native_enum=False),
+        default=AuthProvider.LOCAL,
+        nullable=False
+    )
     
     phone_number: Mapped[str] = mapped_column( String(20), nullable=True,)
     
-    role: Mapped[UserRole] = mapped_column(enum.Enum(UserRole),default=UserRole.CUSTOMER)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, native_enum=False),
+        default=UserRole.CUSTOMER,
+        nullable=False
+    )
     
     is_active: Mapped[bool] = mapped_column(
         nullable=False,
@@ -77,4 +97,6 @@ class CustomerProfile(Base):
     addresses: Mapped[list["Address"]] = relationship(back_populates="customer_profile" , cascade="all, delete-orphan" )
 
     cart: Mapped["Cart"] = relationship(back_populates="customer", uselist=False, cascade="all, delete-orphan")
+
+    orders: Mapped[list["Order"]] = relationship(back_populates="customer", cascade="all, delete-orphan")
 

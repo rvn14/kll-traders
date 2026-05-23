@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import relationship
 import enum
 from decimal import Decimal
@@ -6,10 +10,15 @@ from sqlalchemy import ForeignKey, Numeric, String, DateTime, func, Enum, Text, 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from app.db.session import Base
-from app.models.address import Address
-from app.models.item import Item
-from app.models.order_item import OrderItem
-from app.models.user import User
+
+from app.models.order_address import order_addresses
+from app.models.user import CustomerProfile
+
+if TYPE_CHECKING:
+    from app.models.address import Address
+    from app.models.item import Item
+    from app.models.order_item import OrderItem
+    from app.models.user import User
 
 
 def _create_order_item(item):
@@ -41,11 +50,11 @@ class Order(Base):
     )
 
     customer_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("customer_profiles.id"),
         nullable=False
     )
 
-    customer: Mapped["User"] = relationship(
+    customer: Mapped["CustomerProfile"] = relationship(
         back_populates="orders"
     )
 
@@ -91,7 +100,13 @@ class Order(Base):
     )
 
     delivery_address: Mapped["Address"] = relationship(
-        back_populates="orders"
+        foreign_keys=[delivery_address_id],
+        back_populates="delivery_orders",
+    )
+
+    addresses: Mapped[list["Address"]] = relationship(
+        secondary=order_addresses,
+        back_populates="orders",
     )
 
     delivery_fee: Mapped[Decimal | None] = mapped_column(
@@ -113,7 +128,6 @@ class Order(Base):
     )
 
     order_items: Mapped[list["OrderItem"]] = relationship(
-        "OrderItem",
         back_populates="order"
     )
 

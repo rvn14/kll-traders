@@ -8,6 +8,7 @@ from app.db import create_db_tables
 from app.db.session import check_database_connection
 from app.api.v1.routes.item_routes import router as item_router
 from app.api.v1.routes.upload_routes import router as upload_router
+from app.api.v1.routes.auth_routes import router as auth_router
 
 
 
@@ -29,6 +30,11 @@ app.include_router(
 
 app.include_router(
     upload_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    auth_router,
     prefix="/api/v1",
 )
 
