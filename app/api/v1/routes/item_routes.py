@@ -3,7 +3,7 @@ from typing import Annotated
 from azure.core.exceptions import AzureError
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 
-from app.api.dependencies import get_blob_service, get_item_service
+from app.api.dependencies.services import get_blob_service, get_item_service
 from app.core.exceptions import (
     AzureBlobUploadError,
     BlobConfigurationError,

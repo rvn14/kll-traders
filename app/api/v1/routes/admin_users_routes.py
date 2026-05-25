@@ -2,7 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
-from app.api.dependencies import get_admin_user_service
+from app.api.dependencies.admin import require_admin
+from app.api.dependencies.services import get_admin_user_service
+from app.models.user import User
 from app.schemas.user_schema import UserRead, UserCreate, UserUpdate
 from app.services import admin_user_service
 from app.services.admin_user_service import AdminUserService
@@ -21,10 +23,11 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 def create_user(
-    user_data: UserCreate,
+    payload: UserCreate,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
 ):
-    return admin_user_service.create_user(user_data)
+    return admin_user_service.create_user(payload)
 
 
 # get all
@@ -34,6 +37,7 @@ def create_user(
 )
 def list_users(
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=100),
 ):
@@ -48,6 +52,7 @@ def list_users(
 def get_user_by_id(
     user_id: int,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
 ):
     return admin_user_service.get_user_by_id(user_id)
 
@@ -59,6 +64,7 @@ def get_user_by_id(
 )
 def get_user_by_email(
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin),
     email: str = Query(..., min_length=1),
 ):
     return admin_user_service.get_user_by_email(email)
@@ -71,10 +77,11 @@ def get_user_by_email(
 )
 def update_user(
     user_id: int,
-    user_data: UserRead,
+    payload: UserRead,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
 ):
-    return admin_user_service.update_user(user_id, user_data)
+    return admin_user_service.update_user(user_id, payload)
 
 
 # deactivate user
@@ -85,6 +92,7 @@ def update_user(
 def deactivate_user(
     user_id: int,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
 ):
     return admin_user_service.deactivate_user(user_id)
 
@@ -97,5 +105,6 @@ def deactivate_user(
 def delete_user(
     user_id: int,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
 ):
     admin_user_service.delete_user(user_id)
