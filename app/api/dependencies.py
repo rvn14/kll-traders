@@ -9,10 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.user import User
-from app.repositories.customer_repository import CustomerRepository
+from app.repositories.admin_user_repository import AdminUserRepository
 from app.repositories.item_repository import ItemRepository
 from app.services.blob_service import AzureBlobService
-from app.services.customer_service import CustomerService
+from app.services.admin_user_service import AdminUserService
 from app.services.item_service import ItemService
 from dotenv import load_dotenv
 
@@ -73,14 +73,14 @@ def get_blob_service() -> AzureBlobService:
     return AzureBlobService()
 
 
-def get_customer_repository(
+def get_admin_user_repository(
     db: Annotated[Session, Depends(get_db)],
-) -> CustomerRepository:
-    return CustomerRepository(db)
+) -> AdminUserRepository:
+    return AdminUserRepository(db)
 
-def get_customer_service(
-    customer_repository: Annotated[CustomerRepository, Depends(get_customer_repository)],
-) -> CustomerService:
-    return CustomerService(customer_repository)
+def get_admin_user_service(
+    admin_user_repository: Annotated[AdminUserRepository, Depends(get_admin_user_repository)],
+) -> AdminUserService:
+    return AdminUserService(admin_user_repository)
 
 
