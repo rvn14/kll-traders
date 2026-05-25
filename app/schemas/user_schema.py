@@ -1,13 +1,16 @@
- from datetime import datetime
+
+from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-class CustomerBase(BaseModel):
+from app.models.user import UserRole
+class UserBase(BaseModel):
     full_name: str = Field(
         ...,
         min_length=1,
         max_length=120,
-        description="Full name of the customer",
+        description="Full name of the user",
         
     )
     
@@ -24,51 +27,49 @@ class CustomerBase(BaseModel):
         max_length=20,
         description="Phone number of the customer",
     )
-    
-    address: str | None = Field(
-        default=None,
-        max_length=500,
-        description="Address of the customer",
+
+    role: UserRole = Field(
+        default=UserRole.CUSTOMER,
+        description="Role of the user, either 'customer' or 'admin'",
     )
     
     
-class CustomerCreate(CustomerBase):
-    pass
+class UserCreate(UserBase):
+    password: str | None = Field(
+        ..., 
+        min_length=8, 
+        max_length=120,
+        description="Password for the customer account",
+    )
 
-class CustomerUpdate(BaseModel):
+
+class UserUpdate(BaseModel):
     full_name: str | None = Field(
         default=None,
         min_length=1,
         max_length=120,
-        description="Updated full name of the customer",
-    )
-    
-    email: EmailStr | None = Field(
-        default=None,
-        min_length=5,
-        max_length=255,
-        description="Updated email address of the customer",
+        description="Updated full name of the user",
     )
     
     phone_number: str | None = Field(
         default=None,
         min_length=7,
         max_length=20,
-        description="Updated phone number of the customer",
+        description="Updated phone number of the user",
     )
     
     is_active: bool | None = Field(
         default=None,
-        description="Updated active status of the customer",
-    )   
-    
-    address: str | None = Field(
-        default=None,
-        max_length=500,
-        description="Updated address of the customer",
+        description="Updated active status of the user",
+    )
+
+    role: UserRole = Field(
+        default=UserRole.CUSTOMER,
+        description="Role of the user, either 'customer' or 'admin'",
     )
     
-class CustomerRead(CustomerBase):
+
+class UserRead(UserBase):
     id: int
     is_active: bool
     created_at: datetime

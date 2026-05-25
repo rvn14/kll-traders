@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from jose import JWTError
 from sqlalchemy.orm import Session
-from app.api.dependencies import get_current_user
+from app.api.dependencies.auth import get_current_user
 from app.core import jwt
 from app.core.google_auth import verify_google_token
 from app.core.jwt import create_access_token, create_refresh_token
