@@ -29,7 +29,7 @@ class Item(Base):
         index=True,
     )
     
-    weight_kg: Mapped[Decimal | None] = mapped_column(
+    weight_kg: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True,
     )
