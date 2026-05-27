@@ -10,7 +10,7 @@ from app.core.exceptions import (
     InvalidFileTypeError,
     ItemNotFoundError,
 )
-from app.schemas.item import ItemCreate, ItemRead, ItemUpdate
+from app.schemas.item_schema import ItemCreate, ItemRead, ItemUpdate
 from app.services.blob_service import AzureBlobService
 from app.services.item_service import ItemService
 

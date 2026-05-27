@@ -76,6 +76,18 @@ class User(Base):
 
     customer_profile: Mapped["CustomerProfile"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
 
+    @property
+    def cart(self):
+        return self.customer_profile.cart if self.customer_profile else None
+        
+    @property
+    def addresses(self):
+        return self.customer_profile.addresses if self.customer_profile else []
+        
+    @property
+    def orders(self):
+        return self.customer_profile.orders if self.customer_profile else []
+
 
 class AdminProfile(Base):
     __tablename__ = "admin_profiles"

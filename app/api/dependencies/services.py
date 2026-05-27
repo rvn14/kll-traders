@@ -5,9 +5,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from fastapi import Depends
 from app.repositories.admin_user_repository import AdminUserRepository
+from app.repositories.customer_profile_repository import CustomerProfileRepository
 from app.repositories.item_repository import ItemRepository
 from app.services.blob_service import AzureBlobService
 from app.services.admin_user_service import AdminUserService
+from app.services.customer_profile_service import CustomerProfileService
 from app.services.item_service import ItemService
 
 
@@ -37,4 +39,12 @@ def get_admin_user_service(
 ) -> AdminUserService:
     return AdminUserService(admin_user_repository)
 
+def get_customer_profile_repository(
+    db: Annotated[Session, Depends(get_db)],
+) -> CustomerProfileRepository:
+    return CustomerProfileRepository(db)
 
+def get_customer_profile_service(
+    profile_repository: Annotated[CustomerProfileRepository, Depends(get_customer_profile_repository)]
+) -> CustomerProfileService:
+    return CustomerProfileService(profile_repository)
