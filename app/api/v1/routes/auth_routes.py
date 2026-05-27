@@ -1,4 +1,5 @@
 import os
+from typing_extensions import Annotated
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, status, Depends
 
@@ -32,7 +33,7 @@ router = APIRouter(
 )
 def register(
     payload: RegisterRequest,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ):
     existing_user = db.query(User).filter(
         User.email == payload.email
@@ -73,7 +74,7 @@ def register(
         "role": user.role.value
     })
 
-    refresh_token = create_access_token({
+    refresh_token = create_refresh_token({
         "sub": str(user.id),
     })
 
@@ -89,7 +90,7 @@ def register(
 )
 def google_auth(
     payload: GoogleAuthRequest,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ):
     google_user = verify_google_token(
         payload.credential
@@ -157,7 +158,7 @@ def google_auth(
 )
 def login(
     payload: LoginRequest,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ):
     user = db.query(User).filter(
         User.email == payload.email
@@ -202,7 +203,7 @@ def login(
     response_model=UserResponse
 )
 def get_me(
-    current_user: User = Depends(get_current_user)
+    current_user: Annotated[User, Depends(get_current_user)]
 ):
     return {
         "id": current_user.id,
@@ -214,7 +215,8 @@ def get_me(
 
 @router.post("/refresh")
 def refresh_token(
-    refresh_token: str
+    refresh_token: str,
+    db: Annotated[Session, Depends(get_db)],
 ):
 
     try:
@@ -233,8 +235,16 @@ def refresh_token(
 
         user_id = payload.get("sub")
 
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+            
+        if not user.is_active:
+            raise HTTPException(status_code=403, detail="Account is deactivated")
+
         access_token = create_access_token({
-            "sub": user_id
+            "sub": str(user.id),
+            "role": user.role.value
         })
 
         return {

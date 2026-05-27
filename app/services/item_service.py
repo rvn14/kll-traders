@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.exceptions import ItemAlreadyExistsError, ItemNotFoundError
 from app.models.item import Item
 from app.repositories.item_repository import ItemRepository
-from app.schemas.item import ItemCreate, ItemUpdate
+from app.schemas.item_schema import ItemCreate, ItemUpdate
 
 
 class ItemService:
