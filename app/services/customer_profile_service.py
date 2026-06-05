@@ -1,7 +1,6 @@
-from email.headerregistry import Address
-
 from fastapi import HTTPException, status
 
+from app.models.address import Address
 from app.models.user import CustomerProfile, User
 from app.repositories.customer_profile_repository import CustomerProfileRepository
 from app.schemas.cutomer_profile_schema import AddressCreate, AddressUpdate, ProfileUpdate
@@ -11,14 +10,15 @@ class CustomerProfileService:
     def __init__(self, customer_repository: CustomerProfileRepository):
         self.customer_repository = customer_repository
 
-    def get_customer_profile(self, user: User) -> CustomerProfile:
+    def get_customer_profile(self, user: User) -> User:
         profile = self.customer_repository.get_customer_profile(user.id)
-        if not profile:
+        if profile is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Customer profile not found"
             )
-        return profile
+
+        return user
 
     def update_customer_profile(self, user: User, payload: ProfileUpdate) -> User:
         update_data = payload.model_dump(exclude_unset=True)

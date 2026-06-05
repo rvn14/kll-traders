@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
-from app.models.user import User
+from app.models.cart import Cart
+from app.models.user import AdminProfile, CustomerProfile, User, UserRole
 
 class AdminUserRepository:
     def __init__(self, db: Session):
@@ -13,16 +14,29 @@ class AdminUserRepository:
     
     
     def create(self, user_data: dict) -> User:
-        user = User(**user_data)
+      user = User(**user_data)
 
-        try:
-          self.db.add(user)
-          self.db.commit()
-          self.db.refresh(user)
-          return user
-        except:
-          self.db.rollback()
-          raise
+      try:
+        self.db.add(user)
+        self.db.flush()
+
+        if user.role == UserRole.CUSTOMER:
+          customer_profile = CustomerProfile(user_id=user.id)
+          self.db.add(customer_profile)
+          self.db.flush()
+
+          cart = Cart(customer_id=customer_profile.id)
+          self.db.add(cart)
+        elif user.role == UserRole.ADMIN:
+          admin_profile = AdminProfile(user_id=user.id)
+          self.db.add(admin_profile)
+
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+      except:
+        self.db.rollback()
+        raise
       
       
     def get_all(self, skip: int = 0, limit: int = 100) -> list[User]:

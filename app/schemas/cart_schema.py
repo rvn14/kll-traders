@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.item_schema import ItemResponse
 
@@ -24,3 +24,12 @@ class CartRead(BaseModel):
     items: list[CartItemRead] = []
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class CartItemAdd(BaseModel):
+    item_id: int
+    quantity: int = Field(default=1, ge=1)
+
+
+class CartItemUpdate(BaseModel):
+    quantity: int = Field(..., ge=1)
