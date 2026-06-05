@@ -7,8 +7,6 @@ from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, UniqueConstraint,
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    # these imports ONLY run when type checker reads the file
-    # never at runtime → no circular import crash
     from app.models.cart import Cart
     from app.models.item import Item
 
