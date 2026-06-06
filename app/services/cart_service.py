@@ -48,6 +48,11 @@ class CartService:
         item = self.item_repository.get_by_id(item_id)
         if item is None:
             raise ItemNotFoundError(item_id)
+        if not getattr(item, "is_active", False):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item is not available",
+            )
 
         cart = self._get_or_create_cart(user)
         return self.cart_repository.add_item(cart, item_id=item.id, quantity=quantity)
@@ -62,6 +67,11 @@ class CartService:
         item = self.item_repository.get_by_id(item_id)
         if item is None:
             raise ItemNotFoundError(item_id)
+        if not getattr(item, "is_active", False):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item is not available",
+            )
 
         cart = self._get_or_create_cart(user)
 
