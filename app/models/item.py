@@ -7,13 +7,13 @@ from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint, func, 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from app.db.session import Base
-from app.models.order_item import OrderItem
 
 if TYPE_CHECKING:
     from app.models.blobs import Blob
     from app.models.brand import Brand
     from app.models.category import Category
     from app.models.cart_item import CartItem
+    from app.models.order_item import OrderItem
 
 class Item(Base):
     __tablename__ = "items"

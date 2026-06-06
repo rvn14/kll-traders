@@ -1,9 +1,8 @@
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from decimal import Decimal
 from datetime import datetime
 
 from sqlalchemy import UniqueConstraint, ForeignKey, Numeric, String, DateTime, func, Integer
-from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.session import Base
 from app.models.item import Item
