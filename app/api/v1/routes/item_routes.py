@@ -10,124 +10,87 @@ from app.core.exceptions import (
     InvalidFileTypeError,
     ItemNotFoundError,
 )
-from app.schemas.item_schema import ItemCreate, ItemRead, ItemUpdate
+from app.models.user import User
 from app.services.blob_service import AzureBlobService
 from app.services.item_service import ItemService
 
+from fastapi import APIRouter, Depends, Query
+from decimal import Decimal
+from typing import Optional
+from sqlalchemy.orm import Session
+from app.api.dependencies.auth import get_current_user_optional
+from app.db.session import get_db
+from app.schemas.item_schema import ItemQueryParams,ItemCreateRequest, PaginatedItemsResponse ,ItemResponse,ItemAdminResponse , ItemUpdateRequest
+from app.services.item_service import ItemService
+from app.api.dependencies.auth import require_admin 
 
-router = APIRouter(
-    prefix="/items",
-    tags=["Items"],
-)
-
+router = APIRouter(prefix="/items", tags=["Items"])
 
 @router.post(
-    "",
-    response_model=ItemRead,
-    status_code=status.HTTP_201_CREATED,
+            "",
+            response_model=ItemAdminResponse,
+            status_code=status.HTTP_201_CREATED
 )
 def create_item(
-    item_data: ItemCreate,
+    payload:ItemCreateRequest,
     item_service: Annotated[ItemService, Depends(get_item_service)],
+    currect_user : User = Depends(require_admin),
 ):
-    return item_service.create_item(item_data)
+    return item_service.create_item(payload)
 
-
-@router.get(
-    "",
-    response_model=list[ItemRead],
-)
-def get_items(
+@router.get("",response_model=PaginatedItemsResponse)
+def getItems(
     item_service: Annotated[ItemService, Depends(get_item_service)],
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=100),
+    params: ItemQueryParams = Depends(),
 ):
-    return item_service.get_items(skip=skip, limit=limit)
-
-
+    return item_service.get_items(params)
+    
 @router.get(
     "/{item_id}",
-    response_model=ItemRead,
+    response_model=ItemAdminResponse | ItemResponse,
+    summary="Get item by ID",
 )
 def get_item_by_id(
     item_id: int,
     item_service: Annotated[ItemService, Depends(get_item_service)],
+    current_user: User | None = Depends(get_current_user_optional),
 ):
-    return item_service.get_item_by_id(item_id)
+    return item_service.get_item_by_id(item_id, current_user)
 
 
 @router.patch(
     "/{item_id}",
-    response_model=ItemRead,
+    response_model=ItemAdminResponse,
 )
 def update_item(
     item_id: int,
-    item_data: ItemUpdate,
+    payload: ItemUpdateRequest,
     item_service: Annotated[ItemService, Depends(get_item_service)],
+    current_user: User = Depends(require_admin), 
 ):
-    return item_service.update_item(item_id, item_data)
+    return item_service.update_item(item_id, payload)
 
 
 @router.delete(
     "/{item_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
 )
 def delete_item(
     item_id: int,
     item_service: Annotated[ItemService, Depends(get_item_service)],
+    current_user: User = Depends(require_admin),
 ):
-    item_service.delete_item(item_id)
-    return None
+    return item_service.delete_item(item_id)
 
 
-@router.post(
-    "/{item_id}/image",
-    response_model=ItemRead,
-    status_code=status.HTTP_200_OK,
+@router.patch(
+    "/{item_id}/restore",
+    response_model=ItemAdminResponse,
 )
-def upload_item_image(
+def restore_item(
     item_id: int,
-    file: Annotated[UploadFile, File(...)],
     item_service: Annotated[ItemService, Depends(get_item_service)],
-    blob_service: Annotated[AzureBlobService, Depends(get_blob_service)],
+    current_user: User = Depends(require_admin),    
 ):
-    if not file.filename:
-        raise InvalidFileTypeError("Uploaded file must have a filename.")
+    return item_service.restore_item(item_id)
 
-    if file.content_type is None or not file.content_type.startswith("image/"):
-        raise InvalidFileTypeError("Only image files are allowed for item image upload.")
-
-    existing_item = item_service.get_item_by_id(item_id)
-    old_blob_name = existing_item.image_blob_name
-
-    try:
-        blob_service.ensure_container_exists()
-
-        upload_result = blob_service.upload_file(
-            file=file.file,
-            original_filename=file.filename,
-            content_type=file.content_type,
-            folder="item-images",
-        )
-
-        try:
-            updated_item = item_service.attach_item_blob(
-                item_id=item_id,
-                blob_name=upload_result.blob_name,
-                blob_url=upload_result.blob_url,
-            )
-
-        except ItemNotFoundError:
-            blob_service.delete_blob(upload_result.blob_name)
-            raise
-
-        if old_blob_name and old_blob_name != upload_result.blob_name:
-            blob_service.delete_blob(old_blob_name)
-
-        return updated_item
-
-    except AzureError:
-        raise AzureBlobUploadError("Failed to upload item image to Azure Blob Storage.")
-
-    except RuntimeError as error:
-        raise BlobConfigurationError(str(error))

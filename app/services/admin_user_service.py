@@ -9,8 +9,7 @@ class AdminUserService:
     MAX_LIMIT = 100
     
     def __init__(self, admin_user_repository: AdminUserRepository):
-        self.admin_user_repository = admin_user_repository
-        
+        self.admin_user_repository = admin_user_repository        
         
     def create_user(self, user_data: UserCreate) -> User:
         existing_item = self.admin_user_repository.get_by_email(user_data.email)

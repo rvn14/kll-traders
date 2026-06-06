@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from jose import JWTError
 from sqlalchemy.orm import Session
+from app import db
 from app.api.dependencies.auth import get_current_user
 from app.core import jwt
 from app.core.google_auth import verify_google_token
@@ -73,7 +74,7 @@ def register(
         "role": user.role.value
     })
 
-    refresh_token = create_access_token({
+    refresh_token = create_refresh_token({
         "sub": str(user.id),
     })
 
@@ -166,7 +167,7 @@ def login(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Email not found"
         )
     if not verify_password(
         payload.password,
@@ -174,7 +175,7 @@ def login(
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Invalid password"
         )
     if not user.is_active:
         raise HTTPException(
@@ -233,8 +234,19 @@ def refresh_token(
 
         user_id = payload.get("sub")
 
+        user = db.query(User).filter(
+              User.id == user_id
+            ).first()
+        
+        if not user:
+            raise HTTPException(status_code=401,details="User not found")
+
+        if not user.is_active :
+            raise HTTPException(status_code=403,details="Account is deactivated")
+        
         access_token = create_access_token({
-            "sub": user_id
+            "sub": user_id,
+            "role": user.role.value
         })
 
         return {
