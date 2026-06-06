@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError
-from app.core.exceptions import CustomerAlreadyExistsError, CustomerNotFoundError, UserAlreadyExistsError, UserNotFoundError
+from app.core.exceptions import UserAlreadyExistsError, UserNotFoundError
+from app.core.security import hash_password
 from app.models.user import User
 from app.repositories.admin_user_repository import AdminUserRepository
 from app.schemas.user_schema import UserCreate, UserUpdate
@@ -17,12 +18,13 @@ class AdminUserService:
         
         if existing_item is not None:
             raise UserAlreadyExistsError
-        
-        
+
         data = user_data.model_dump()
-        
+        password = data.pop("password", None)
+        data["hashed_password"] = hash_password(password) if password else None
+
         try:
-          return self.admin_user_repository.create(data)
+            return self.admin_user_repository.create(data)
         except IntegrityError:
             raise UserAlreadyExistsError(user_data.email)
           

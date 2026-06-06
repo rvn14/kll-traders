@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.exceptions import ItemAlreadyExistsError, ItemNotFoundError
 from app.models.item import Item
 from app.repositories.item_repository import ItemRepository
-from app.schemas.item_schema import ItemCreate, ItemUpdate
+from app.schemas.item_schema import ItemQueryParams
 
 
 class ItemService:
@@ -12,7 +12,7 @@ class ItemService:
     def __init__(self, item_repository: ItemRepository):
         self.item_repository = item_repository
 
-    def create_item(self, item_data: ItemCreate) -> Item:
+    def create_item(self, item_data: ItemQueryParams) -> Item:
         existing_item = self.item_repository.get_by_name(item_data.name)
 
         if existing_item is not None:
@@ -37,7 +37,7 @@ class ItemService:
 
         return item
 
-    def update_item(self, item_id: int, item_data: ItemUpdate) -> Item:
+    def update_item(self, item_id: int, item_data: ItemQueryParams) -> Item:
         existing_item = self.item_repository.get_by_id(item_id)
 
         if existing_item is None:

@@ -10,7 +10,7 @@ from app.core.exceptions import (
     InvalidFileTypeError,
     ItemNotFoundError,
 )
-from app.schemas.item_schema import ItemCreate, ItemRead, ItemUpdate
+from app.schemas.item_schema import ItemQueryParams, ItemResponse
 from app.services.blob_service import AzureBlobService
 from app.services.item_service import ItemService
 
@@ -23,11 +23,11 @@ router = APIRouter(
 
 @router.post(
     "",
-    response_model=ItemRead,
+    response_model=ItemResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def create_item(
-    item_data: ItemCreate,
+    item_data: ItemQueryParams,
     item_service: Annotated[ItemService, Depends(get_item_service)],
 ):
     return item_service.create_item(item_data)
@@ -35,7 +35,7 @@ def create_item(
 
 @router.get(
     "",
-    response_model=list[ItemRead],
+    response_model=list[ItemResponse],
 )
 def get_items(
     item_service: Annotated[ItemService, Depends(get_item_service)],
@@ -47,7 +47,7 @@ def get_items(
 
 @router.get(
     "/{item_id}",
-    response_model=ItemRead,
+    response_model=ItemResponse,
 )
 def get_item_by_id(
     item_id: int,
@@ -58,11 +58,11 @@ def get_item_by_id(
 
 @router.patch(
     "/{item_id}",
-    response_model=ItemRead,
+    response_model=ItemResponse,
 )
 def update_item(
     item_id: int,
-    item_data: ItemUpdate,
+    item_data: ItemQueryParams,
     item_service: Annotated[ItemService, Depends(get_item_service)],
 ):
     return item_service.update_item(item_id, item_data)
@@ -82,7 +82,7 @@ def delete_item(
 
 @router.post(
     "/{item_id}/image",
-    response_model=ItemRead,
+    response_model=ItemResponse,
     status_code=status.HTTP_200_OK,
 )
 def upload_item_image(
