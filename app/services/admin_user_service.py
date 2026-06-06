@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from app.core.exceptions import CustomerAlreadyExistsError, CustomerNotFoundError, UserAlreadyExistsError, UserNotFoundError
+from app.core.exceptions import UserAlreadyExistsError, UserNotFoundError
 from app.core.security import hash_password
 from app.models.user import User
 from app.repositories.admin_user_repository import AdminUserRepository

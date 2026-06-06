@@ -4,8 +4,6 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions import (
     AzureBlobUploadError,
     BlobConfigurationError,
-    CustomerAlreadyExistsError,
-    CustomerNotFoundError,
     InvalidFileTypeError,
     ItemAlreadyExistsError,
     ItemNotFoundError,
@@ -79,28 +77,28 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
         
     
-    @app.exception_handler(CustomerAlreadyExistsError)
-    async def customer_already_exists_handler(
-        request: Request,
-        exc: CustomerAlreadyExistsError,
-    ) -> JSONResponse:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
-                "detail": str(exc),
-                "error_code": "CUSTOMER_ALREADY_EXISTS",
-            },
-        )
+    # @app.exception_handler(CustomerAlreadyExistsError)
+    # async def customer_already_exists_handler(
+    #     request: Request,
+    #     exc: CustomerAlreadyExistsError,
+    # ) -> JSONResponse:
+    #     return JSONResponse(
+    #         status_code=status.HTTP_409_CONFLICT,
+    #         content={
+    #             "detail": str(exc),
+    #             "error_code": "CUSTOMER_ALREADY_EXISTS",
+    #         },
+    #     )
 
-    @app.exception_handler(CustomerNotFoundError)
-    async def customer_not_found_handler(
-        request: Request,
-        exc: CustomerNotFoundError,
-    ) -> JSONResponse:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "detail": str(exc),
-                "error_code": "CUSTOMER_NOT_FOUND",
-            },
-        )
+    # @app.exception_handler(CustomerNotFoundError)
+    # async def customer_not_found_handler(
+    #     request: Request,
+    #     exc: CustomerNotFoundError,
+    # ) -> JSONResponse:
+    #     return JSONResponse(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         content={
+    #             "detail": str(exc),
+    #             "error_code": "CUSTOMER_NOT_FOUND",
+    #         },
+    #     )

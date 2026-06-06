@@ -1,11 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy import String, Boolean, DateTime, func, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship , ForeignKey
+from sqlalchemy import String, Boolean, DateTime, func, Text, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
-from app.models.brand import Brand
-from app.models.item import Item
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.brand import Brand
+    from app.models.item import Item
 
 class Blob(Base):
     __tablename__ = "blobs"
