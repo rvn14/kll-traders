@@ -41,3 +41,11 @@ class AddressRead(AddressBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class UpdateEmailRequest(BaseModel):
+    new_email: EmailStr
+    password: str
+
+class UpdatePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str

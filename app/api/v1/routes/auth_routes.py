@@ -1,7 +1,7 @@
 import os
 from typing_extensions import Annotated
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, Request, Response, status, Depends
 
 from jose import JWTError
 from sqlalchemy.orm import Session
@@ -14,12 +14,14 @@ from app.db.session import get_db
 
 from app.models.cart import Cart
 from app.models.user import AuthProvider, CustomerProfile, User, UserRole
-from app.schemas.auth_schema import GoogleAuthRequest, LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.schemas.auth_schema import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.api.dependencies.auth import oauth
 
     
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+ADMINS = ["harindulneth@gmail.com", "sanjanadissanayake22@gmail.com", "dasunadithya123@gmail.com"]
 
 router = APIRouter(
     prefix="/auth",
@@ -44,12 +46,13 @@ def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this email already exists"
         )
+    
     user = User(
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
         phone_number=payload.phone_number,
-        role=UserRole.CUSTOMER,
+        role=UserRole.ADMIN if payload.email in ADMINS else UserRole.CUSTOMER,
         auth_provider=AuthProvider.LOCAL
     )
     db.add(user)
@@ -84,20 +87,26 @@ def register(
     )
 
 
-@router.post(
-    "/google",
+@router.get("/google/auth")
+async def login_with_google(request: Request):
+    redirect_uri = request.url_for("google_callback")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+@router.get(
+    "/google/callback",
     response_model=TokenResponse
 )
-def google_auth(
-    payload: GoogleAuthRequest,
+async def google_callback(
+    request: Request,
     db: Annotated[Session, Depends(get_db)],
 ):
-    google_user = verify_google_token(
-        payload.credential
-    )
+    token = await oauth.google.authorize_access_token(request)
 
-    email = google_user.get("email")
-    name = google_user.get("name")
+    user_info = token["userinfo"]
+
+    email = user_info["email"]
+    name = user_info["name"]
+    google_id = user_info["sub"]
 
     if not email:
         raise HTTPException(
@@ -114,7 +123,7 @@ def google_auth(
             full_name=name,
             email=email,
             hashed_password=None,
-            role=UserRole.CUSTOMER,
+            role=UserRole.ADMIN if email in ADMINS else UserRole.CUSTOMER,
             auth_provider=AuthProvider.GOOGLE
         )
         db.add(user)
@@ -259,7 +268,13 @@ def refresh_token(
 
 
 @router.post("/logout")
-def logout():
+def logout(
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+
     return {
         "message": "Logged out successfully"
     }

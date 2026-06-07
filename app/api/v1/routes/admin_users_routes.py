@@ -44,6 +44,19 @@ def list_users(
     return admin_user_service.get_users(skip=skip, limit=limit)
 
 
+# get by email
+@router.get(
+    "/by-email",
+    response_model=UserRead,   
+)
+def get_user_by_email(
+    admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin),
+    email: str = Query(..., min_length=1),
+):
+    return admin_user_service.get_user_by_email(email.strip())
+
+
 # get by id
 @router.get(
     "/{user_id}",
@@ -57,19 +70,6 @@ def get_user_by_id(
     return admin_user_service.get_user_by_id(user_id)
 
 
-# get by email
-@router.get(
-    "/by-email",
-    response_model=UserRead,   
-)
-def get_user_by_email(
-    admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
-    _: User = Depends(require_admin),
-    email: str = Query(..., min_length=1),
-):
-    return admin_user_service.get_user_by_email(email)
-
-
 # update user
 @router.put(
     "/{user_id}",
@@ -77,7 +77,7 @@ def get_user_by_email(
 )
 def update_user(
     user_id: int,
-    payload: UserRead,
+    payload: UserUpdate,
     admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
     _: User = Depends(require_admin)
 ):
@@ -95,6 +95,19 @@ def deactivate_user(
     _: User = Depends(require_admin)
 ):
     return admin_user_service.deactivate_user(user_id)
+
+
+# activate user
+@router.post(
+    "/{user_id}/activate",
+    response_model=UserRead,
+)
+def activate_user(
+    user_id: int,
+    admin_user_service: Annotated[AdminUserService, Depends(get_admin_user_service)],
+    _: User = Depends(require_admin)
+):
+    return admin_user_service.activate_user(user_id)
 
 
 # delete user

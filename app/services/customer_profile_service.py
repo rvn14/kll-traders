@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status
 
+from app.core.security import hash_password, verify_password
 from app.models.address import Address
 from app.models.user import CustomerProfile, User
 from app.repositories.customer_profile_repository import CustomerProfileRepository
-from app.schemas.cutomer_profile_schema import AddressCreate, AddressUpdate, ProfileUpdate
+from app.schemas.cutomer_profile_schema import AddressCreate, AddressUpdate, ProfileUpdate, UpdateEmailRequest, UpdatePasswordRequest
 
 
 class CustomerProfileService:
@@ -102,4 +103,36 @@ class CustomerProfileService:
                 detail="Address not found"
             )
         self.customer_repository.delete_address(address)
+
+    def update_email(self, current_user: User, payload: UpdateEmailRequest) -> User:
+        if not verify_password(payload.password, current_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect password"
+            )
+        
+        existing_user = self.customer_repository.get_user_by_email(payload.new_email)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This email is already in use by another account"
+            )
+        
+        return self.customer_repository.update_user_email(current_user, payload.new_email)
+    
+    def update_password(self, current_user: User, payload: UpdatePasswordRequest) -> User:
+        if not verify_password(payload.current_password, current_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect current password"
+            )
+        
+        if payload.current_password == payload.new_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="New password cannot be the same as the current password"
+            )
+            
+        new_hashed_password = hash_password(payload.new_password)
+        return self.customer_repository.update_user_password(current_user, new_hashed_password)
         

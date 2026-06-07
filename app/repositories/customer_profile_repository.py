@@ -10,6 +10,12 @@ class CustomerProfileRepository:
     def __init__(self, db):
         self.db = db
 
+    def get_user_by_email(self, email: str) -> User | None:
+        return self.db.query(User).filter(User.email == email).first()
+    
+    def get_user_by_id(self, user_id: int) -> User | None:
+        return self.db.query(User).filter(User.id == user_id).first()
+
     def get_customer_profile(self, user_id: int) -> CustomerProfile | None:
         statement = select(CustomerProfile).where(CustomerProfile.user_id == user_id)
         return self.db.execute(statement).scalars().first()
@@ -64,3 +70,23 @@ class CustomerProfileRepository:
             self.db.commit()
         except:
             self.db.rollback()
+
+    def update_user_email(self, user: User, new_email: str) -> User:
+        user.email = new_email
+        try:
+            self.db.commit()
+            self.db.refresh(user)
+            return user
+        except IntegrityError:
+            self.db.rollback()
+            raise
+    
+    def update_user_password(self, user: User, hashed_password: str) -> User:
+        user.hashed_password = hashed_password
+        try:
+            self.db.commit()
+            self.db.refresh(user)
+            return user
+        except IntegrityError:
+            self.db.rollback()
+            raise

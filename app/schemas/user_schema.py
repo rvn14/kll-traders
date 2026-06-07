@@ -21,8 +21,8 @@ class UserBase(BaseModel):
         description="Email address of the customer",
     )
     
-    phone_number: str = Field(
-        ...,
+    phone_number: str | None = Field(
+        default=None,
         min_length=7,
         max_length=20,
         description="Phone number of the customer",

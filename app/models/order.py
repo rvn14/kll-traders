@@ -64,22 +64,19 @@ class Order(Base):
     )
 
     payment_status: Mapped[PaymentStatus] = mapped_column(
-        Enum(PaymentStatus),
-        native_enum=False,
+        Enum(PaymentStatus, native_enum=False),
         nullable=False,
         default=PaymentStatus.PENDING,
     )
 
     payment_method: Mapped[PaymentMethod] = mapped_column(
-        Enum(PaymentMethod),
-        native_enum=False,
+        Enum(PaymentMethod, native_enum=False),
         nullable=False,
         default=PaymentMethod.COD,
     )
 
     order_status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus),
-        native_enum=False,
+        Enum(OrderStatus, native_enum=False),
         nullable=False,
         default=OrderStatus.PENDING,
     )

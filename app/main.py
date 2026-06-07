@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI, HTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import get_settings
 from app.core.exception_handlers import register_exception_handlers
@@ -11,17 +13,25 @@ from app.api.v1.routes.cutomer_profile_routes import router as customer_profile_
 from app.api.v1.routes.item_routes import router as item_router
 from app.api.v1.routes.upload_routes import router as upload_router
 from app.api.v1.routes.auth_routes import router as auth_router
+from app.api.v1.routes.admin_users_routes import router as admin_users_router
+    
+from dotenv import load_dotenv
 
-
-
+load_dotenv()
 settings = get_settings()
 
+SESSION_SECRET = os.getenv("SESSION_SECRET")
 
 app = FastAPI(
     title="Items CRUD API",
     version="0.1.0",
 )
 
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET,
+)
 
 register_exception_handlers(app)
 
@@ -37,6 +47,11 @@ app.include_router(
 
 app.include_router(
     auth_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    admin_users_router,
     prefix="/api/v1",
 )
 
