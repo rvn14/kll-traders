@@ -1,11 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies.auth import get_current_user
-from app.api.dependencies.services import get_customer_profile_service
+from app.api.dependencies.services import get_admin_user_service, get_customer_profile_service
+from app.core.security import verify_password
 from app.models.user import User
-from app.schemas.cutomer_profile_schema import AddressCreate, AddressRead, AddressUpdate, CustomerProfileRead, ProfileUpdate
+from app.schemas.cutomer_profile_schema import AddressCreate, AddressRead, AddressUpdate, CustomerProfileRead, ProfileUpdate, UpdateEmailRequest, UpdatePasswordRequest
+from app.services.admin_user_service import AdminUserService
 from app.services.customer_profile_service import CustomerProfileService
 
 
@@ -103,3 +105,25 @@ def delete_address(
     current_user: User = Depends(get_current_user)
 ):
     profile_service.delete_address(current_user, address_id)
+
+
+# update email
+@router.put("/update-email")
+def update_email(
+    payload: UpdateEmailRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    profile_service: Annotated[CustomerProfileService, Depends(get_customer_profile_service)]
+):
+    profile_service.update_email(current_user, payload)
+    return {"message": "Email updated successfully"}
+
+
+# update password
+@router.put("/update-password")
+def update_password(
+    payload: UpdatePasswordRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    profile_service: Annotated[CustomerProfileService, Depends(get_customer_profile_service)]
+):
+    profile_service.update_password(current_user, payload)
+    return {"message": "Password updated successfully"}

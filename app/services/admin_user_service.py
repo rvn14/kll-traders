@@ -68,6 +68,19 @@ class AdminUserService:
             return self.admin_user_repository.update(user, update_data)
         except IntegrityError:
             raise
+
+    def activate_user(self, user_id: int) -> User:
+        user = self.admin_user_repository.get_by_id(user_id)
+        
+        if user is None:
+            raise UserNotFoundError(user_id)
+        
+        update_data = {"is_active": True}
+        
+        try:
+            return self.admin_user_repository.update(user, update_data)
+        except IntegrityError:
+            raise
         
     def update_user(self, user_id: int, user_data: UserUpdate) -> User:
         existing_user = self.admin_user_repository.get_by_id(user_id)
