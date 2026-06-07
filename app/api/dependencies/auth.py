@@ -63,3 +63,26 @@ def get_current_user(
         raise credentials_exception
     
     return user 
+
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/auth/login",
+    auto_error=False        # key difference: won't throw 401 if no token
+)
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User | None:
+
+    if token is None:
+        return None         # guest — no token sent at all
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None         # invalid token — treat as guest, no 401
+
+    return db.query(User).filter(User.id == int(user_id)).first()

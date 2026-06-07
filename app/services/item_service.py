@@ -1,10 +1,24 @@
 from sqlalchemy.exc import IntegrityError
-
 from app.core.exceptions import ItemAlreadyExistsError, ItemNotFoundError
 from app.models.item import Item
 from app.repositories.item_repository import ItemRepository
-from app.schemas.item_schema import ItemQueryParams
+from app.models.user import User, UserRole
+from fastapi import HTTPException
 
+import math
+
+from sqlalchemy.orm import Session
+
+from app.repositories.item_repository import ItemRepository
+
+from app.schemas.item_schema import (
+    ItemQueryParams,
+    ItemResponse,
+    PaginatedItemsResponse,
+    ItemAdminResponse,
+    ItemUpdateRequest,
+    ItemCreateRequest
+)
 
 class ItemService:
     MAX_ITEMS_LIMIT = 100
@@ -12,80 +26,155 @@ class ItemService:
     def __init__(self, item_repository: ItemRepository):
         self.item_repository = item_repository
 
-    def create_item(self, item_data: ItemQueryParams) -> Item:
-        existing_item = self.item_repository.get_by_name(item_data.name)
+    def create_item(self, payload: ItemCreateRequest) -> ItemAdminResponse:
+        existing_item = self.item_repository.get_by_name(payload.name)
 
         if existing_item is not None:
-            raise ItemAlreadyExistsError(item_data.name)
+            raise ItemAlreadyExistsError(payload.name)
+        
+        if not self.item_repository.brand_exists(payload.brand_id):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Brand {payload.brand_id} not found or inactive"
+            )
 
-        data = item_data.model_dump()
+        if not self.item_repository.category_exists(payload.category_id):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Category {payload.category_id} not found or inactive"
+            )
 
-        try:
-            return self.item_repository.create(data)
-        except IntegrityError:
-            raise ItemAlreadyExistsError(item_data.name)
 
-    def get_items(self, skip: int = 0, limit: int = 100) -> list[Item]:
-        safe_limit = min(limit, self.MAX_ITEMS_LIMIT)
-        return self.item_repository.get_all(skip=skip, limit=safe_limit)
+        item = self.item_repository.create(payload)
 
-    def get_item_by_id(self, item_id: int) -> Item:
+        item_with_relations = self.item_repository.get_by_id(item.id)
+
+        return ItemAdminResponse.model_validate(item_with_relations)
+
+
+    def get_items(
+        self,
+        params: ItemQueryParams
+    ) -> PaginatedItemsResponse:
+
+        allowed_sort = {
+            "name",
+            "price",
+            "created_at"
+        }
+
+        allowed_order = {
+            "asc",
+            "desc"
+        }
+
+        if params.sort_by not in allowed_sort:
+            params.sort_by = "created_at"
+
+        if params.order not in allowed_order:
+            params.order = "desc"
+
+        params.limit = min(params.limit, 100)
+
+        params.page = max(params.page, 1)
+
+        items, total = self.item_repository.get_items_and_count(params)
+
+        total_pages = (
+            math.ceil(total / params.limit)
+            if total else 1
+        )
+
+        return PaginatedItemsResponse(
+            total=total,
+
+            page=params.page,
+            limit=params.limit,
+
+            total_pages=total_pages,
+
+            items=[
+                ItemResponse.model_validate(item)
+                for item in items
+            ]
+        )
+
+    def get_item_by_id(self, item_id: int,current_user: User | None,) -> ItemAdminResponse | ItemResponse:
+
         item = self.item_repository.get_by_id(item_id)
 
         if item is None:
             raise ItemNotFoundError(item_id)
+        
+        is_admin = (
+            current_user is not None and
+            current_user.role == UserRole.ADMIN
+        )
 
-        return item
+        if not item.is_active and not is_admin:
+             raise ItemNotFoundError(item_id)
+        
+        if is_admin:
+            return ItemAdminResponse.model_validate(item)
 
-    def update_item(self, item_id: int, item_data: ItemQueryParams) -> Item:
+        return ItemResponse.model_validate(item)
+
+    def update_item(self, item_id: int, payload: ItemUpdateRequest) -> ItemAdminResponse:
         existing_item = self.item_repository.get_by_id(item_id)
 
         if existing_item is None:
             raise ItemNotFoundError(item_id)
+        
+        if payload.name and payload.name != existing_item.name:
+            if self.item_repository.get_by_name(payload.name):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Item with name '{payload.name}' already exists"
+                )
+        if payload.brand_id and payload.brand_id != existing_item.brand_id:
+            if not self.item_repository.brand_exists(payload.brand_id):
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Brand {payload.brand_id} not found or inactive"
+                )
+            
+        if payload.category_id and payload.category_id != existing_item.category_id:
+            if not self.item_repository.category_exists(payload.category_id):
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Category {payload.category_id} not found or inactive"
+                )
+        updated_item = self.item_repository.update(existing_item,payload)
 
-        update_data = item_data.model_dump(exclude_unset=True)
+        item_with_relations = self.item_repository.get_by_id(updated_item.id)
 
-        if not update_data:
-            return existing_item
+        return ItemAdminResponse.model_validate(item_with_relations)
 
-        new_name = update_data.get("name")
-
-        if new_name is not None:
-            item_with_same_name = self.item_repository.get_by_name(new_name)
-
-            if item_with_same_name is not None and item_with_same_name.id != item_id:
-                raise ItemAlreadyExistsError(new_name)
-
-        try:
-            return self.item_repository.update(existing_item, update_data)
-        except IntegrityError:
-            if new_name is not None:
-                raise ItemAlreadyExistsError(new_name)
-
-            raise
-
-    def attach_item_blob(
-        self,
-        item_id: int,
-        blob_name: str,
-        blob_url: str,
-    ) -> Item:
+    def delete_item(self, item_id: int) -> dict:
         existing_item = self.item_repository.get_by_id(item_id)
 
         if existing_item is None:
             raise ItemNotFoundError(item_id)
+        
+        if not existing_item.is_active:
+            raise HTTPException(
+                status_code=400,
+                detail="Item is already deleted"
+            )
 
-        update_data = {
-            "image_blob_name": blob_name,
-            "image_blob_url": blob_url,
-        }
+        self.item_repository.soft_delete(existing_item)
+        return {"message": f"Item {item_id} deleted successfully"}
+    
+    def restore_item(self,item_id:int) -> ItemAdminResponse:
+        item = self.item_repository.get_by_id(item_id)
 
-        return self.item_repository.update(existing_item, update_data)
-
-    def delete_item(self, item_id: int) -> None:
-        existing_item = self.item_repository.get_by_id(item_id)
-
-        if existing_item is None:
+        if item is None:
             raise ItemNotFoundError(item_id)
-
-        self.item_repository.delete(existing_item)
+        
+        if item.is_active:
+            raise HTTPException(
+                status_code=400,
+                detail="Item is already active"
+            )
+        restored = self.item_repository.restore(item)
+        return ItemAdminResponse.model_validate(restored)

@@ -29,6 +29,11 @@ class Item(Base):
         index=True,
     )
     
+    weight_kg: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
     description: Mapped[str] = mapped_column(
         Text,
         nullable=True,
