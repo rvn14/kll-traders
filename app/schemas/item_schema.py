@@ -1,4 +1,4 @@
-from pydantic import BaseModel, computed_field ,ConfigDict,field_validator
+from pydantic import BaseModel, Field, computed_field ,ConfigDict,field_validator
 from typing import Optional
 from decimal import Decimal
 from datetime import datetime
@@ -28,7 +28,7 @@ class ItemResponse(BaseModel):
     price: Decimal
     discount_price: Optional[Decimal] = None
     is_featured: bool
-    current_stock: int
+    current_stock: int = Field(exclude=True)
     blob: Optional[BlobBasic] = None
 
     @computed_field
@@ -41,6 +41,7 @@ class ItemResponse(BaseModel):
 
 class ItemAdminResponse(ItemResponse):
     cost_price: Optional[Decimal] = None  # profit info
+    current_stock: int
     is_active:  bool
     created_at: datetime
     updated_at: datetime

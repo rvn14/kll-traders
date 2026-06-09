@@ -32,11 +32,11 @@ class CartService:
 
     def _get_or_create_cart(self, user: User) -> Cart:
         customer_profile_id = self._get_customer_profile_id(user)
-        return self.cart_repository.get_or_create_cart_for_customer(customer_profile_id)
+        return self.cart_repository._get_or_create_cart_for_customer(customer_profile_id)
 
     def get_cart(self, user: User) -> Cart:
         cart = self._get_or_create_cart(user)
-        return self.cart_repository.get_cart_by_customer_id(cart.customer_id) or cart
+        return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart
 
     def add_to_cart(self, user: User, item_id: int, quantity: int) -> Cart:
         if quantity < 1:
@@ -82,7 +82,7 @@ class CartService:
                 detail="Item is not in cart",
             )
 
-        return self.cart_repository.get_cart_by_customer_id(cart.customer_id) or cart
+        return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart
 
     def remove_from_cart(self, user: User, item_id: int) -> Cart:
         item = self.item_repository.get_by_id(item_id)
@@ -98,4 +98,9 @@ class CartService:
                 detail="Item is not in cart",
             )
 
-        return self.cart_repository.get_cart_by_customer_id(cart.customer_id) or cart
+        return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart
+    
+    def clear_cart(self, user: User) -> Cart:
+        cart = self._get_or_create_cart(user)
+        self.cart_repository.clear_cart(cart)
+        return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart

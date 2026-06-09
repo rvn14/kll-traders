@@ -15,6 +15,7 @@ router = APIRouter(
 )
 
 
+# get my cart
 @router.get(
     "",
     response_model=CartRead,
@@ -27,6 +28,7 @@ def get_my_cart(
     return cart_service.get_cart(user=current_user)
 
 
+# add to cart
 @router.post(
     "/items",
     response_model=CartRead,
@@ -44,6 +46,7 @@ def add_to_cart(
     )
 
 
+# update cart item
 @router.patch(
     "/items/{item_id}",
     response_model=CartRead,
@@ -61,6 +64,7 @@ def update_cart_item(
     )
 
 
+# remove cart item
 @router.delete(
     "/items/{item_id}",
     response_model=CartRead,
@@ -73,4 +77,18 @@ def remove_cart_item(
     return cart_service.remove_from_cart(
         user=current_user,
         item_id=item_id,
+    )
+
+
+# clear cart
+@router.delete(
+    "",
+    response_model=CartRead,
+)
+def clear_cart(
+    cart_service: Annotated[CartService, Depends(get_cart_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return cart_service.clear_cart(
+        user=current_user,
     )
