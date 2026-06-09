@@ -25,16 +25,15 @@ class BlobConfigurationError(Exception):
         super().__init__(message)
         
         
-class CustomerAlreadyExistsError(Exception):
+class UserAlreadyExistsError(Exception):
     def __init__(self, email: str):
         self.email = email
-        super().__init__(f"Customer with email '{email}' already exists.")
+        super().__init__(f"User with email '{email}' already exists.")
         
         
         
-class CustomerNotFoundError(Exception):
-    def __init__(self, customer_id: int):
-        self.customer_id = customer_id
-        super().__init__(f"Customer with id {customer_id} was not found.")
-        
+class UserNotFoundError(Exception):
+    def __init__(self, user_cred: int | str | None):
+        self.user_cred = user_cred
+        super().__init__(f"User with credentials {user_cred} was not found.")
         
