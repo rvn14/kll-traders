@@ -12,7 +12,7 @@ class CartRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_cart_by_customer_id(self, customer_id: int) -> Cart | None:
+    def _get_cart_by_customer_id(self, customer_id: int) -> Cart | None:
         statement = (
             select(Cart)
             .where(Cart.customer_id == customer_id)
@@ -27,14 +27,14 @@ class CartRepository:
                 .joinedload(CartItem.item)
                 .joinedload(Item.blob),
             )
+            .execution_options(populate_existing=True)
         )
 
-        # .unique() avoids duplicate parent rows due to joined eager loads
         return self.db.execute(statement).unique().scalars().first()
 
-    def get_or_create_cart_for_customer(self, customer_id: int) -> Cart:
+    def _get_or_create_cart_for_customer(self, customer_id: int) -> Cart:
         try:
-            existing_cart = self.get_cart_by_customer_id(customer_id)
+            existing_cart = self._get_cart_by_customer_id(customer_id)
             if existing_cart is not None:
                 return existing_cart
 
@@ -70,7 +70,7 @@ class CartRepository:
 
             self.db.commit()
 
-            return self.get_cart_by_customer_id(cart.customer_id) or cart
+            return self._get_cart_by_customer_id(cart.customer_id) or cart
         except Exception:
             self.db.rollback()
             raise

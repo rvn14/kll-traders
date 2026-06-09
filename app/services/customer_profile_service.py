@@ -62,8 +62,14 @@ class CustomerProfileService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Customer profile not found"
             )
-        return self.customer_repository.get_address_by_id(address_id, profile.id)
-    
+        address = self.customer_repository.get_address_by_id(address_id, profile.id)
+        if not address:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Address not found or does not belong to customer profile"
+            )
+        return address
+
     def update_address(self, user: User, address_id: int, payload: AddressUpdate) -> Address:
         profile = self.customer_repository.get_customer_profile(user.id)
         if not profile:
@@ -75,7 +81,7 @@ class CustomerProfileService:
         if not address:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Address not found"
+                detail="Address not found or does not belong to customer profile"
             )
         
         update_data = payload.model_dump(exclude_unset=True)
@@ -100,7 +106,7 @@ class CustomerProfileService:
         if not address:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Address not found"
+                detail="Address not found or does not belong to customer profile"
             )
         self.customer_repository.delete_address(address)
 

@@ -22,7 +22,7 @@ from app.api.dependencies.auth import get_current_user_optional
 from app.db.session import get_db
 from app.schemas.item_schema import ItemQueryParams,ItemCreateRequest, PaginatedItemsResponse ,ItemResponse,ItemAdminResponse , ItemUpdateRequest
 from app.services.item_service import ItemService
-from app.api.dependencies.auth import require_admin 
+from app.api.dependencies.admin import require_admin 
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
@@ -39,7 +39,7 @@ def create_item(
     return item_service.create_item(payload)
 
 @router.get("",response_model=PaginatedItemsResponse)
-def getItems(
+def get_items(
     item_service: Annotated[ItemService, Depends(get_item_service)],
     params: ItemQueryParams = Depends(),
 ):

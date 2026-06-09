@@ -36,15 +36,18 @@ def get_admin_user_repository(
 ) -> AdminUserRepository:
     return AdminUserRepository(db)
 
+
 def get_admin_user_service(
     admin_user_repository: Annotated[AdminUserRepository, Depends(get_admin_user_repository)],
 ) -> AdminUserService:
     return AdminUserService(admin_user_repository)
 
+
 def get_customer_profile_repository(
     db: Annotated[Session, Depends(get_db)],
 ) -> CustomerProfileRepository:
     return CustomerProfileRepository(db)
+
 
 def get_customer_profile_service(
     profile_repository: Annotated[CustomerProfileRepository, Depends(get_customer_profile_repository)]
