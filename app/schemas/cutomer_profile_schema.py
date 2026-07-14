@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.schemas.cart_schema import CartRead
-from app.schemas.order_schema import OrderRead
 from app.schemas.user_schema import UserBase, UserRead
+
+if TYPE_CHECKING:
+    from app.schemas.order_schema import OrderRead
 
 
 class CustomerProfileRead(UserRead):
@@ -49,3 +54,11 @@ class UpdateEmailRequest(BaseModel):
 class UpdatePasswordRequest(BaseModel):
     current_password: str
     new_password: str
+
+
+# Resolve deferred OrderRead forward reference
+def _rebuild_models():
+    from app.schemas.order_schema import OrderRead  # noqa: F811
+    CustomerProfileRead.model_rebuild()
+
+_rebuild_models()

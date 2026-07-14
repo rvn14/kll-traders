@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from app.db.session import Base
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, UniqueConstraint, func, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, UniqueConstraint, func, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -23,6 +23,8 @@ class CartItem(Base):
     item_id:Mapped[int] = mapped_column(ForeignKey("items.id",ondelete="CASCADE"))
 
     quantity:Mapped[int]   = mapped_column(Integer, default=1)
+    
+    is_selected: Mapped[bool] = mapped_column(Boolean, default=False)
 
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.services import get_cart_service
 from app.models.user import User
-from app.schemas.cart_schema import CartItemAdd, CartItemUpdate, CartRead
+from app.schemas.cart_schema import CartItemAdd, CartItemSelect, CartItemUpdate, CartRead
 from app.services.cart_service import CartService
 
 
@@ -91,4 +91,22 @@ def clear_cart(
 ):
     return cart_service.clear_cart(
         user=current_user,
+    )
+
+
+# toggle item selection
+@router.patch(
+    "/items/{item_id}/select",
+    response_model=CartRead,
+)
+def toggle_item_selection(
+    item_id: int,
+    payload: CartItemSelect,
+    cart_service: Annotated[CartService, Depends(get_cart_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return cart_service.toggle_item_selection(
+        user=current_user,
+        item_id=item_id,
+        is_selected=payload.is_selected,
     )
