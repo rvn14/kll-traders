@@ -109,3 +109,29 @@ class CartRepository:
         except Exception:
             self.db.rollback()
             raise
+
+    def toggle_item_selection(self, cart_id: int, item_id: int, is_selected: bool) -> CartItem | None:
+        try:
+            cart_item = self.get_cart_item(cart_id, item_id)
+            if cart_item is None:
+                return None
+
+            cart_item.is_selected = is_selected
+            self.db.commit()
+            self.db.refresh(cart_item)
+            return cart_item
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def get_selected_items(self, cart_id: int) -> list[CartItem]:
+        statement = (
+            select(CartItem)
+            .where(CartItem.cart_id == cart_id, CartItem.is_selected == True)
+            .options(
+                joinedload(CartItem.item).joinedload(Item.brand),
+                joinedload(CartItem.item).joinedload(Item.category),
+                joinedload(CartItem.item).joinedload(Item.blob),
+            )
+        )
+        return list(self.db.execute(statement).unique().scalars().all())

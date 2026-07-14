@@ -36,4 +36,30 @@ class UserNotFoundError(Exception):
     def __init__(self, user_cred: int | str | None):
         self.user_cred = user_cred
         super().__init__(f"User with credentials {user_cred} was not found.")
-        
+
+
+class OrderNotFoundError(Exception):
+    def __init__(self, order_id: int | str):
+        self.order_id = order_id
+        super().__init__(f"Order '{order_id}' was not found.")
+
+
+class InsufficientStockError(Exception):
+    def __init__(self, item_name: str, available: int, requested: int):
+        self.item_name = item_name
+        self.available = available
+        self.requested = requested
+        super().__init__(
+            f"Insufficient stock for '{item_name}': "
+            f"available={available}, requested={requested}."
+        )
+
+
+class EmptyCartError(Exception):
+    def __init__(self):
+        super().__init__("No selected items in cart to checkout.")
+
+
+class InvalidOrderTypeError(Exception):
+    def __init__(self, message: str = "Invalid order type for this operation."):
+        super().__init__(message)
