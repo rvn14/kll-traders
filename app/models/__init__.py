@@ -9,8 +9,9 @@ from app.models.cart import Cart
 from app.models.cart_item import CartItem
 from app.models.order_address import order_addresses
 from app.models.blobs import Blob
+from app.models.app_settings import AppSettings
 
 __all__ = [
     "Item", "User", "AdminProfile", "CustomerProfile", "Brand", "Category", 
-    "Order", "OrderItem", "Address", "Cart", "CartItem", "order_addresses", "Blob"
+    "Order", "OrderItem", "Address", "Cart", "CartItem", "order_addresses", "Blob", "AppSettings"
 ]

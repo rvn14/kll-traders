@@ -104,3 +104,21 @@ class CartService:
         cart = self._get_or_create_cart(user)
         self.cart_repository.clear_cart(cart)
         return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart
+
+    def toggle_item_selection(self, user: User, item_id: int, is_selected: bool) -> Cart:
+        item = self.item_repository.get_by_id(item_id)
+        if item is None:
+            raise ItemNotFoundError(item_id)
+
+        cart = self._get_or_create_cart(user)
+
+        updated = self.cart_repository.toggle_item_selection(
+            cart_id=cart.id, item_id=item.id, is_selected=is_selected
+        )
+        if updated is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Item is not in cart",
+            )
+
+        return self.cart_repository._get_cart_by_customer_id(cart.customer_id) or cart

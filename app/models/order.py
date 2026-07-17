@@ -25,21 +25,31 @@ def _create_order_item(item):
     from app.models.order_item import OrderItem
     return OrderItem(item=item)
 
+
 class PaymentStatus(str, enum.Enum):
     PENDING = "pending"
     PAID = "paid"
     FAILED = "failed"
     REFUNDED = "refunded"
 
+
 class PaymentMethod(str, enum.Enum):
     COD = "cash-on-delivery"
-    CARD = "card"
+    WHATSAPP = "whatsapp"
+
 
 class OrderStatus(str, enum.Enum):
     PENDING = "pending"
+    CONFIRMED = "confirmed"
     PROCESSING = "processing"
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
+
+
+class OrderType(str, enum.Enum):
+    DELIVERY = "delivery"
+    PICKUP = "pickup"
+
 
 class Order(Base):
     __tablename__ = "orders"
@@ -49,6 +59,13 @@ class Order(Base):
         index=True
     )
 
+    invoice_no: Mapped[str] = mapped_column(
+        String(30),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
     customer_id: Mapped[int] = mapped_column(
         ForeignKey("customer_profiles.id"),
         nullable=False
@@ -56,6 +73,36 @@ class Order(Base):
 
     customer: Mapped["CustomerProfile"] = relationship(
         back_populates="orders"
+    )
+
+    order_type: Mapped[OrderType] = mapped_column(
+        Enum(OrderType, native_enum=False),
+        nullable=False,
+        default=OrderType.DELIVERY,
+    )
+
+    subtotal: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0,
+    )
+
+    discount_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0,
+    )
+
+    tax_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0,
+    )
+
+    delivery_fee: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0,
     )
 
     total_amount: Mapped[Decimal] = mapped_column(
@@ -72,7 +119,7 @@ class Order(Base):
     payment_method: Mapped[PaymentMethod] = mapped_column(
         Enum(PaymentMethod, native_enum=False),
         nullable=False,
-        default=PaymentMethod.COD,
+        default=PaymentMethod.WHATSAPP,
     )
 
     order_status: Mapped[OrderStatus] = mapped_column(
@@ -91,12 +138,12 @@ class Order(Base):
         nullable=True
     )
 
-    delivery_address_id: Mapped[int] = mapped_column(
+    delivery_address_id: Mapped[int | None] = mapped_column(
         ForeignKey("addresses.id"),
-        nullable=False
+        nullable=True
     )
 
-    delivery_address: Mapped["Address"] = relationship(
+    delivery_address: Mapped["Address | None"] = relationship(
         foreign_keys=[delivery_address_id],
         back_populates="delivery_orders",
     )
@@ -104,11 +151,6 @@ class Order(Base):
     addresses: Mapped[list["Address"]] = relationship(
         secondary=order_addresses,
         back_populates="orders",
-    )
-
-    delivery_fee: Mapped[Decimal | None] = mapped_column(
-        Numeric(10, 2),
-        nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(

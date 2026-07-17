@@ -10,6 +10,7 @@ class CartItemRead(BaseModel):
     cart_id: int
     item_id: int
     quantity: int
+    is_selected: bool
     added_at: datetime
 
     item: ItemResponse
@@ -33,3 +34,7 @@ class CartItemAdd(BaseModel):
 
 class CartItemUpdate(BaseModel):
     quantity: int = Field(..., ge=1)
+
+
+class CartItemSelect(BaseModel):
+    is_selected: bool

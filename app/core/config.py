@@ -15,6 +15,27 @@ class Settings(BaseSettings):
     AZURE_STORAGE_CONTAINER_NAME: str | None = None
     AZURE_BLOB_CONTAINER_NAME: str = "items"
 
+    # Delivery fee settings
+    STORE_CITY: str = "Colombo"
+    DELIVERY_FEE_LOCAL: float = 0
+    DELIVERY_FEE_NEARBY: float = 500
+    DELIVERY_FEE_OTHER: float = 1000
+    NEARBY_CITIES: str = ""  # comma-separated, e.g. "Negombo,Gampaha,Kalutara"
+
+    # Default tax rate (fallback if DB has no entry)
+    DEFAULT_TAX_RATE_PERCENT: float = 3.0
+
+    # Cart history limit (max past items to keep in cart)
+    CART_HISTORY_LIMIT: int = 50
+
+    # WhatsApp Business Cloud API
+    WHATSAPP_ACCESS_TOKEN: str = ""
+    WHATSAPP_PHONE_NUMBER_ID: str = ""
+    WHATSAPP_BUSINESS_ACCOUNT_ID: str = ""
+    WHATSAPP_API_VERSION: str = "v23.0"
+    # Set to True to use approved WhatsApp templates, False for plain text messages
+    WHATSAPP_USE_TEMPLATES: bool = True
+
     @field_validator("DEBUG", mode="before")
     @classmethod
     def parse_debug(cls, value):
@@ -30,6 +51,11 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+
+    def get_nearby_cities_list(self) -> list[str]:
+        if not self.NEARBY_CITIES:
+            return []
+        return [c.strip().lower() for c in self.NEARBY_CITIES.split(",") if c.strip()]
     
 @lru_cache()
 def get_settings() -> Settings:

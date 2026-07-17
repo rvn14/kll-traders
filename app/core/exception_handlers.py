@@ -4,9 +4,13 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions import (
     AzureBlobUploadError,
     BlobConfigurationError,
+    EmptyCartError,
+    InsufficientStockError,
     InvalidFileTypeError,
+    InvalidOrderTypeError,
     ItemAlreadyExistsError,
     ItemNotFoundError,
+    OrderNotFoundError,
 )
 
 
@@ -75,30 +79,55 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "error_code": "BLOB_CONFIGURATION_ERROR",
             },
         )
-        
-    
-    # @app.exception_handler(CustomerAlreadyExistsError)
-    # async def customer_already_exists_handler(
-    #     request: Request,
-    #     exc: CustomerAlreadyExistsError,
-    # ) -> JSONResponse:
-    #     return JSONResponse(
-    #         status_code=status.HTTP_409_CONFLICT,
-    #         content={
-    #             "detail": str(exc),
-    #             "error_code": "CUSTOMER_ALREADY_EXISTS",
-    #         },
-    #     )
 
-    # @app.exception_handler(CustomerNotFoundError)
-    # async def customer_not_found_handler(
-    #     request: Request,
-    #     exc: CustomerNotFoundError,
-    # ) -> JSONResponse:
-    #     return JSONResponse(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         content={
-    #             "detail": str(exc),
-    #             "error_code": "CUSTOMER_NOT_FOUND",
-    #         },
-    #     )
+    @app.exception_handler(OrderNotFoundError)
+    async def order_not_found_handler(
+        request: Request,
+        exc: OrderNotFoundError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "detail": str(exc),
+                "error_code": "ORDER_NOT_FOUND",
+            },
+        )
+
+    @app.exception_handler(InsufficientStockError)
+    async def insufficient_stock_handler(
+        request: Request,
+        exc: InsufficientStockError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "detail": str(exc),
+                "error_code": "INSUFFICIENT_STOCK",
+            },
+        )
+
+    @app.exception_handler(EmptyCartError)
+    async def empty_cart_handler(
+        request: Request,
+        exc: EmptyCartError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "detail": str(exc),
+                "error_code": "EMPTY_CART",
+            },
+        )
+
+    @app.exception_handler(InvalidOrderTypeError)
+    async def invalid_order_type_handler(
+        request: Request,
+        exc: InvalidOrderTypeError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "detail": str(exc),
+                "error_code": "INVALID_ORDER_TYPE",
+            },
+        )
