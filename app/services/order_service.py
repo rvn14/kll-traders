@@ -18,6 +18,7 @@ from app.core.exceptions import (
 from app.models.address import Address
 from app.models.cart_item import CartItem
 from app.models.item import Item
+from app.schemas.item_schema import ItemUpdateRequest
 from app.models.order import Order, OrderStatus, OrderType, PaymentStatus
 from app.models.order_item import OrderItem
 from app.models.user import User
@@ -165,9 +166,8 @@ class OrderService:
             )
 
     def _deduct_stock(self, item: Item, quantity: int) -> None:
-        self.item_repository.update(
-            item.id, {"current_stock": item.current_stock - quantity}
-        )
+        payload = ItemUpdateRequest(current_stock=item.current_stock - quantity)
+        self.item_repository.update(item, payload)
 
     def _build_order_item_reads(self, order: Order) -> list[OrderItemRead]:
         reads = []

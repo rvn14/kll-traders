@@ -120,10 +120,18 @@ class OrderRepository:
     def get_purchased_items(
         self, customer_id: int, skip: int = 0, limit: int = 20
     ) -> list[OrderItem]:
-        statement = (
-            select(OrderItem)
+        # Subquery: pick the latest order_item id per unique item_id
+        latest_subq = (
+            select(sa_func.max(OrderItem.id).label("max_id"))
             .join(Order, OrderItem.order_id == Order.id)
             .where(Order.customer_id == customer_id)
+            .group_by(OrderItem.item_id)
+            .subquery()
+        )
+
+        statement = (
+            select(OrderItem)
+            .join(latest_subq, OrderItem.id == latest_subq.c.max_id)
             .options(
                 joinedload(OrderItem.item).joinedload(Item.brand),
                 joinedload(OrderItem.item).joinedload(Item.category),
@@ -137,9 +145,9 @@ class OrderRepository:
         return list(self.db.execute(statement).unique().scalars().all())
 
     def count_purchased_items(self, customer_id: int) -> int:
+        """Count distinct items purchased by a customer."""
         statement = (
-            select(sa_func.count())
-            .select_from(OrderItem)
+            select(sa_func.count(sa_func.distinct(OrderItem.item_id)))
             .join(Order, OrderItem.order_id == Order.id)
             .where(Order.customer_id == customer_id)
         )
