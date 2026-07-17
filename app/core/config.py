@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     # Cart history limit (max past items to keep in cart)
     CART_HISTORY_LIMIT: int = 50
 
+    # WhatsApp Business Cloud API
+    WHATSAPP_ACCESS_TOKEN: str = ""
+    WHATSAPP_PHONE_NUMBER_ID: str = ""
+    WHATSAPP_BUSINESS_ACCOUNT_ID: str = ""
+    WHATSAPP_API_VERSION: str = "v23.0"
+    # Set to True to use approved WhatsApp templates, False for plain text messages
+    WHATSAPP_USE_TEMPLATES: bool = True
+
     @field_validator("DEBUG", mode="before")
     @classmethod
     def parse_debug(cls, value):
