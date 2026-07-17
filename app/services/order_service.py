@@ -596,6 +596,15 @@ class OrderService:
             raise OrderNotFoundError(order_id)
         return self._build_order_read(order)
 
+    def admin_get_bill_by_invoice(self, invoice_no: str) -> BillSummary:
+        order = self.order_repository.get_order_by_invoice(invoice_no)
+        if order is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Order with invoice '{invoice_no}' not found",
+            )
+        return self._build_bill_summary(order)
+
     def admin_update_order(
         self,
         order_id: int,

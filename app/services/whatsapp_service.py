@@ -19,7 +19,6 @@ from typing import Any
 import httpx
 
 from app.core.config import get_settings
-from app.models.order import OrderType
 from app.models.user import User
 from app.schemas.order_schema import BillSummary
 
@@ -122,19 +121,16 @@ class WhatsAppService:
     ) -> dict[str, Any]:
         """Build payload for order_payment_request template.
 
-        Variables sent (matches {{1}} … {{9}} in the template):
+        Variables sent (matches {{1}} … {{7}} in the template):
             1  customer name
             2  invoice number
             3  items list
             4  subtotal
             5  discount amount
-            6  tax amount
-            7  delivery fee
-            8  total amount
-            9  delivery address or pickup text
+            6  delivery fee
+            7  total amount
         """
-        items_text    = self._format_items_list(bill)
-        address_text  = self._format_address(bill)
+        items_text = self._format_items_list(bill)
 
         parameters = [
             self._text_param(user.full_name),
@@ -142,10 +138,8 @@ class WhatsAppService:
             self._text_param(items_text),
             self._text_param(self._fmt(bill.subtotal)),
             self._text_param(self._fmt(bill.discount_amount)),
-            self._text_param(self._fmt(bill.tax_amount)),
             self._text_param(self._fmt(bill.delivery_fee)),
             self._text_param(self._fmt(bill.total_amount)),
-            self._text_param(address_text),
         ]
 
         return self._build_template_payload(
@@ -220,29 +214,19 @@ class WhatsAppService:
 
     @staticmethod
     def _format_items_list(bill: BillSummary) -> str:
-        """Format the ordered items as a readable text block."""
-        lines = []
-        for item in bill.items:
-            price = Decimal(str(item.unit_price)).quantize(Decimal("0.01"))
-            total = Decimal(str(item.line_total)).quantize(Decimal("0.01"))
-            lines.append(
-                f"• {item.item_name}\n"
-                f"  Qty: {item.quantity} × LKR {price:,.2f}\n"
-                f"  Total: LKR {total:,.2f}"
-            )
-        return "\n".join(lines)
+        """Format ordered items as a single-line string.
 
-    @staticmethod
-    def _format_address(bill: BillSummary) -> str:
-        """Return delivery address block or pickup text."""
-        if bill.order_type == OrderType.DELIVERY and bill.delivery_address:
-            addr  = bill.delivery_address
-            parts = [f"📍 Delivery to: {addr.address_line_1}"]
-            if addr.address_line_2:
-                parts.append(addr.address_line_2)
-            parts.append(f"{addr.city}, {addr.postal_code}")
-            return "\n".join(parts)
-        return "🏪 Pickup from store"
+        WhatsApp template parameters cannot contain newlines, tabs,
+        or more than 4 consecutive spaces.
+        """
+        parts = []
+        for idx, item in enumerate(bill.items, start=1):
+            price = Decimal(str(item.unit_price)).quantize(Decimal("0.01"))
+            parts.append(
+                f"{idx}. {item.item_name} x {item.quantity}"
+                f" - LKR {price:,.2f}"
+            )
+        return ", ".join(parts)
 
     # ─────────────────────────────────────────────────────────────────────
     #  Phone number formatting
