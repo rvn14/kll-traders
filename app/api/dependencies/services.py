@@ -18,6 +18,18 @@ from app.services.item_service import ItemService
 from app.services.order_service import OrderService
 from app.services.settings_service import SettingsService
 from app.services.whatsapp_service import WhatsAppService
+from app.repositories.category_repository import CategoryRepository
+from app.services.category_service import CategoryService
+
+def get_category_repository(
+    db: Annotated[Session, Depends(get_db)],
+) -> CategoryRepository:
+    return CategoryRepository(db)
+
+def get_category_service(
+    category_repository: Annotated[CategoryRepository, Depends(get_category_repository)],
+) -> CategoryService:
+    return CategoryService(category_repository)
 
 
 def get_item_repository(
