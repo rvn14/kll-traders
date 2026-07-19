@@ -32,7 +32,7 @@ class ItemService:
         if existing_item is not None:
             raise ItemAlreadyExistsError(payload.name)
         
-        if not self.item_repository.brand_exists(payload.brand_id):
+        if payload.brand_id is not None and not self.item_repository.brand_exists(payload.brand_id):
             raise HTTPException(
                 status_code=404,
                 detail=f"Brand {payload.brand_id} not found or inactive"
