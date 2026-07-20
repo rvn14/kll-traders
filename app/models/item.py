@@ -39,9 +39,9 @@ class Item(Base):
         nullable=True,
     )
 
-    brand_id: Mapped[int] = mapped_column(
+    brand_id: Mapped[int | None] = mapped_column(
         ForeignKey("brands.id"),
-        nullable=False
+        nullable=True
     )
 
     category_id: Mapped[int] = mapped_column(
@@ -100,7 +100,7 @@ class Item(Base):
         nullable=False,
     )
 
-    blob: Mapped["Blob"] = relationship(
+    blobs: Mapped[list["Blob"]] = relationship(
         back_populates="item"
     )
 

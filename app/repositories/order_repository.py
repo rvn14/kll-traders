@@ -26,7 +26,7 @@ class OrderRepository:
                 .joinedload(Item.category),
                 joinedload(Order.order_items)
                 .joinedload(OrderItem.item)
-                .joinedload(Item.blob),
+                .joinedload(Item.blobs),
                 joinedload(Order.delivery_address),
                 joinedload(Order.customer).joinedload(CustomerProfile.user),
             )
@@ -135,7 +135,7 @@ class OrderRepository:
             .options(
                 joinedload(OrderItem.item).joinedload(Item.brand),
                 joinedload(OrderItem.item).joinedload(Item.category),
-                joinedload(OrderItem.item).joinedload(Item.blob),
+                joinedload(OrderItem.item).joinedload(Item.blobs),
                 joinedload(OrderItem.order),
             )
             .order_by(OrderItem.created_at.desc())

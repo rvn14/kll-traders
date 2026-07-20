@@ -17,7 +17,7 @@ from app.api.v1.routes.admin_users_routes import router as admin_users_router
 from app.api.v1.routes.order_routes import router as order_router, admin_router as admin_order_router
 from app.api.v1.routes.settings_routes import router as settings_router
 from app.api.v1.routes.category_routes import router as category_router
-    
+from app.api.v1.routes.brand_routes import router as brand_router
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -85,6 +85,11 @@ app.include_router(
 
 app.include_router(
     category_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    brand_router,
     prefix="/api/v1",
 )
 

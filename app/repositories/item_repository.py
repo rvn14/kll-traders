@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from app.models.item import Item
 from app.models.brand import Brand
 from app.models.category import Category
+from app.models.blobs import Blob
 from app.schemas.item_schema import (
     ItemQueryParams,
     ItemCreateRequest,
@@ -24,7 +25,7 @@ class ItemRepository:
             .options(
                 joinedload(Item.category),
                 joinedload(Item.brand),
-                joinedload(Item.blob),
+                joinedload(Item.blobs),
             )
             .where(Item.is_active == True)
         )
@@ -106,7 +107,7 @@ class ItemRepository:
                 .options(
                     joinedload(Item.brand),
                     joinedload(Item.category),
-                    joinedload(Item.blob),
+                    joinedload(Item.blobs),
                 )
                 .filter(Item.id == item_id)
                 .first()
@@ -175,6 +176,12 @@ class ItemRepository:
             is_featured    = payload.is_featured,
             is_active      = True,
         )
+        
+        if payload.image_urls:
+            for url in payload.image_urls:
+                blob_name = url.split('/')[-1] if '/' in url else url
+                item.blobs.append(Blob(image_blob_url=url, image_blob_name=blob_name))
+
         try:
             self.db.add(item)
             self.db.commit()
@@ -204,7 +211,15 @@ class ItemRepository:
             )
 
         for field, value in update_data.items():
+            if field == "image_urls":
+                continue
             setattr(item, field, value)
+            
+        if "image_urls" in update_data and update_data["image_urls"] is not None:
+            item.blobs = [] # Clear existing blobs
+            for url in update_data["image_urls"]:
+                blob_name = url.split('/')[-1] if '/' in url else url
+                item.blobs.append(Blob(image_blob_url=url, image_blob_name=blob_name))
 
         try:
             self.db.commit()

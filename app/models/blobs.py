@@ -41,5 +41,5 @@ class Blob(Base):
     )
 
     item: Mapped["Item"] = relationship(
-        back_populates="blob"
+        back_populates="blobs"
     )

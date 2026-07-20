@@ -547,8 +547,8 @@ class OrderService:
         items = []
         for oi in order_items:
             image_url = None
-            if oi.item and oi.item.blob:
-                image_url = oi.item.blob.image_blob_url
+            if oi.item and oi.item.blobs:
+                image_url = oi.item.blobs[0].image_blob_url
 
             items.append(
                 PurchasedItemRead(
