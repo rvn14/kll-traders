@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     CART_HISTORY_LIMIT: int = 50
 
     # WhatsApp Business Cloud API
-    WHATSAPP_ACCESS_TOKEN: str = ""
-    WHATSAPP_PHONE_NUMBER_ID: str = ""
-    WHATSAPP_BUSINESS_ACCOUNT_ID: str = ""
+    WHATSAPP_ACCESS_TOKEN: str = "EAAORbhZCKbwcBR88YcLyDCzoQ77Pka5aFzc5NUeoRDGNPnFRwlX7wIrgG66acne32hxOWQY7ZAsIPtNjZAKQZA4duQe8iTXQZBjeReQCb8P0XDMJJgeTrvbLv5GZByCESDXSVRQTICCRrwZCXgoJaVuQf8OcRialvFwKS72FlNQuE4dpsZChGu10OafuMZCWAJQZDZD"
+    WHATSAPP_PHONE_NUMBER_ID: str = "1165400526658249"
+    WHATSAPP_BUSINESS_ACCOUNT_ID: str = "2344184266389658"
     WHATSAPP_API_VERSION: str = "v23.0"
     # Set to True to use approved WhatsApp templates, False for plain text messages
     WHATSAPP_USE_TEMPLATES: bool = True

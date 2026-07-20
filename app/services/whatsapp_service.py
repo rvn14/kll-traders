@@ -142,10 +142,10 @@ class WhatsAppService:
             self._text_param(items_text),
             self._text_param(self._fmt(bill.subtotal)),
             self._text_param(self._fmt(bill.discount_amount)),
-            self._text_param(self._fmt(bill.tax_amount)),
+            # self._text_param(self._fmt(bill.tax_amount)),
             self._text_param(self._fmt(bill.delivery_fee)),
             self._text_param(self._fmt(bill.total_amount)),
-            self._text_param(address_text),
+            # self._text_param(address_text),
         ]
 
         return self._build_template_payload(
