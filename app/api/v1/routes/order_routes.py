@@ -184,6 +184,20 @@ def admin_get_all_orders(
 
 
 @admin_router.get(
+    "/search",
+    response_model=BillSummary,
+    status_code=status.HTTP_200_OK,
+)
+def admin_search_bill_by_invoice(
+    invoice_no: str = Query(..., description="Invoice number to search for"),
+    order_service: Annotated[OrderService, Depends(get_order_service)] = None,
+    _admin: Annotated[User, Depends(require_admin)] = None,
+):
+    """Search for an order bill by invoice number (admin)."""
+    return order_service.admin_get_bill_by_invoice(invoice_no=invoice_no)
+
+
+@admin_router.get(
     "/{order_id}",
     response_model=OrderRead,
     status_code=status.HTTP_200_OK,

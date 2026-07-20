@@ -1,7 +1,9 @@
 import os
+from urllib.parse import urlencode
 from typing_extensions import Annotated
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Request, Response, status, Depends
+from fastapi.responses import RedirectResponse
 
 from jose import JWTError
 from sqlalchemy.orm import Session
@@ -95,7 +97,6 @@ async def login_with_google(request: Request):
 
 @router.get(
     "/google/callback",
-    response_model=TokenResponse
 )
 async def google_callback(
     request: Request,
@@ -155,11 +156,14 @@ async def google_callback(
         "sub": str(user.id)
     })
 
-    return {
+    # Redirect to frontend callback page with tokens
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    params = urlencode({
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+    })
+    redirect_url = f"{frontend_url}/auth/google/callback?{params}"
+    return RedirectResponse(url=redirect_url)
 
 
 @router.post(

@@ -25,7 +25,7 @@ class CartRepository:
                 .joinedload(Item.category),
                 joinedload(Cart.items)
                 .joinedload(CartItem.item)
-                .joinedload(Item.blob),
+                .joinedload(Item.blobs),
             )
             .execution_options(populate_existing=True)
         )
@@ -131,7 +131,7 @@ class CartRepository:
             .options(
                 joinedload(CartItem.item).joinedload(Item.brand),
                 joinedload(CartItem.item).joinedload(Item.category),
-                joinedload(CartItem.item).joinedload(Item.blob),
+                joinedload(CartItem.item).joinedload(Item.blobs),
             )
         )
         return list(self.db.execute(statement).unique().scalars().all())

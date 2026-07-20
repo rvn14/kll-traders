@@ -23,13 +23,13 @@ class ItemResponse(BaseModel):
     weight_kg: Optional[int] = None
     description: Optional[str] = None
     warranty_weeks: Optional[int]     = None
-    brand: BrandBasic
+    brand: Optional[BrandBasic] = None
     category: CategoryBasic
     price: Decimal
     discount_price: Optional[Decimal] = None
     is_featured: bool
     current_stock: int = Field(exclude=True)
-    blob: Optional[BlobBasic] = None
+    blobs: list[BlobBasic] = Field(default_factory=list)
 
     @computed_field
     @property
@@ -74,7 +74,7 @@ class ItemCreateRequest(BaseModel):
 
     name:           str
     description:    Optional[str]     = None
-    brand_id:       int
+    brand_id:       Optional[int]     = None
     category_id:    int
     price:          Decimal
     discount_price: Optional[Decimal] = None
@@ -83,6 +83,7 @@ class ItemCreateRequest(BaseModel):
     weight_kg:      Optional[Decimal] = None
     current_stock:  int
     is_featured:    bool              = False
+    image_urls:     list[str]         = Field(default_factory=list)
 
     @field_validator("price", "cost_price", "discount_price")
     @classmethod
@@ -126,6 +127,7 @@ class ItemUpdateRequest(BaseModel):
     current_stock:  Optional[int]     = None
     is_featured:    Optional[bool]    = None
     is_active:      Optional[bool]    = None
+    image_urls:     Optional[list[str]] = None
 
     # ── Validators ────────────────────────────────────────────
     @field_validator("price", "cost_price", "discount_price")

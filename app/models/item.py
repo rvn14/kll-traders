@@ -100,7 +100,7 @@ class Item(Base):
         nullable=False,
     )
 
-    blob: Mapped["Blob"] = relationship(
+    blobs: Mapped[list["Blob"]] = relationship(
         back_populates="item"
     )
 
