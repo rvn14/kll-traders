@@ -23,7 +23,7 @@ class ItemResponse(BaseModel):
     weight_kg: Optional[int] = None
     description: Optional[str] = None
     warranty_weeks: Optional[int]     = None
-    brand: Optional[BrandBasic] = None
+    brand: BrandBasic
     category: CategoryBasic
     price: Decimal
     discount_price: Optional[Decimal] = None
@@ -74,7 +74,7 @@ class ItemCreateRequest(BaseModel):
 
     name:           str
     description:    Optional[str]     = None
-    brand_id:       Optional[int]     = None
+    brand_id:       int
     category_id:    int
     price:          Decimal
     discount_price: Optional[Decimal] = None
